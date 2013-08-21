@@ -1,0 +1,8 @@
+#! /usr/bin/make -f
+%:
+	dh $@ --with d-i
+
+ARCH=$(shell dpkg-architecture -qDEB_HOST_ARCH)
+
+override_dh_di_numbers:
+	dh_di_numbers lib/partman

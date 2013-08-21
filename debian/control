@@ -1,0 +1,12 @@
+Source: partman-auto-multiboot
+Section: debian-installer
+Priority: optional
+Maintainer: John Morris <john@zultron.com>
+Uploaders: John Morris <john@zultron.com>
+Build-Depends: debhelper (>= 9), dh-di, po-debconf (>= 0.5.0)
+
+Package: partman-auto-multiboot
+Architecture: any
+Package-Type: udeb
+Depends: ${shlibs:Depends}, ${misc:Depends}, console-keymaps, partman-auto
+Description: Automatically multi-boot partition storage devices (partman)

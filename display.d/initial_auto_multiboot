@@ -1,0 +1,60 @@
+#!/bin/sh
+
+. /lib/partman/lib/base.sh
+
+# See if the 'multiboot' autopartition method has been set
+method=""
+if db_get partman-auto/method && [ "$RET" ]; then
+    method="$RET"
+fi
+if ! [ "$method" = "multiboot" ]; then
+    # multiboot not specified; continue on with normal installer
+    exit 0
+fi
+
+# Only run the first time
+if [ -f /var/lib/partman/autopart_multiboot ]; then
+    exit 0
+fi
+
+# Skip if no disks detected and don't run on S/390
+if [ -z "$(get_auto_disks)" ] || \
+    [ "$(udpkg --print-architecture)" = s390 ]; then
+    exit 0
+fi
+
+mkdir -p /var/lib/partman
+touch /var/lib/partman/autopart_multiboot
+
+# 10initial_auto will bomb if partman-auto/method = multiboot
+touch /var/lib/partman/initial_auto
+
+# See if any autopartition disks have been set
+disks=""
+if db_get partman-auto/disk && [ "$RET" ]; then
+    disks="$RET"
+fi
+
+# If there's only one disk, then preseeding partman-auto/disk is
+# unnecessary, and sometimes inconvenient in heterogeneous environments
+if [ -z "$disks" ]; then
+    DEVS="$(get_auto_disks)"
+    if [ "$(echo "$DEVS" | wc -l)" -eq 1 ]; then
+	disks="$(cat "${DEVS%$TAB*}"/device)"
+    fi
+fi
+
+# if $disks still isn't set, bomb out
+if [ -z "$disks" ]; then
+    logger -t partman-auto-multiboot "No disks found found to install"
+    exit 1
+fi
+
+for disk in $disks; do
+    id=$(dev_to_partman "$disk") || true
+    if [ "$id" ]; then
+	autopartition-multiboot "$id"
+	exit 0
+    fi
+done
+exit 1
