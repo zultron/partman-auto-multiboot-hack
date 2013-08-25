@@ -1,10 +1,41 @@
 #!/bin/sh
 
+# The following is based on autopartition-lvm
 . /lib/partman/lib/auto-multiboot.sh
 
 devs="$*"
 method="multiboot"
 
-auto_multiboot_prepare "$devs" $method || exit $?
+logger "Started $0 $*"
 
-auto_lvm_perform || exit 1
+# lib/auto-multiboot.sh:auto_multiboot_prepare parallels
+# lib/auto-lvm.sh:auto_lvm_prepare
+auto_multiboot_prepare "$devs" $method || exit $?
+logger "Finished auto_multiboot_prepare"
+
+# auto_lvm_perform creates pvs and vgs; we only want to create lvs.
+logger "NOT Running auto_lvm_perform"
+#auto_lvm_perform || exit 1
+
+logger "Instead, running perform_recipe_by_lvm for each vg"
+# this is a copy of the bottom part of auto_lvm_perform()
+# where lvs are created
+
+# auto_lvm_create_vg_map() will have created one file for each VG
+for vg_file in $VG_MAP_DIR/*; do
+    logger "vg_file $vg_file"
+    pv_devices="$(cat $vg_file)"
+    logger "pv_devices $pv_devices"
+    vg_name=$(basename $vg_file)
+    [ $vg_name = $DEFAULT_VG ] && vg_name="$defvgname"
+    logger "vg_name $vg_name"
+
+    logger "running perform_recipe_by_lvm $vg_name $recipe"
+    # Assume the vg exists; probably not smart
+    perform_recipe_by_lvm "$vg_name" $recipe
+    logger "running vg_lock_pvs $vg_name $pv_devices"
+    vg_lock_pvs "$vg_name" $pv_devices
+done
+
+# Default to accepting the autopartitioning
+menudir_default_choice /lib/partman/choose_partition finish finish || true

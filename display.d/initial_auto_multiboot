@@ -2,6 +2,8 @@
 
 . /lib/partman/lib/base.sh
 
+logger "In initial_auto_multiboot"
+
 # See if the 'multiboot' autopartition method has been set
 method=""
 if db_get partman-auto/method && [ "$RET" ]; then
@@ -12,10 +14,22 @@ if ! [ "$method" = "multiboot" ]; then
     exit 0
 fi
 
+logger "Method is multiboot"
+
 # Only run the first time
 if [ -f /var/lib/partman/autopart_multiboot ]; then
     exit 0
 fi
+
+logger "no /var/lib/partman/autopart_multiboot"
+
+mkdir -p /var/lib/partman
+touch /var/lib/partman/autopart_multiboot
+
+# 10initial_auto will bomb if partman-auto/method = multiboot
+touch /var/lib/partman/initial_auto
+
+. /lib/partman/lib/auto-shared.sh
 
 # Skip if no disks detected and don't run on S/390
 if [ -z "$(get_auto_disks)" ] || \
@@ -23,11 +37,10 @@ if [ -z "$(get_auto_disks)" ] || \
     exit 0
 fi
 
-mkdir -p /var/lib/partman
-touch /var/lib/partman/autopart_multiboot
+logger "no disks detected and not s390 arch"
 
-# 10initial_auto will bomb if partman-auto/method = multiboot
-touch /var/lib/partman/initial_auto
+logger "touching initial_auto:"
+logger "$(ls -l /var/lib/partman/initial_auto)"
 
 # See if any autopartition disks have been set
 disks=""
@@ -53,6 +66,7 @@ fi
 for disk in $disks; do
     id=$(dev_to_partman "$disk") || true
     if [ "$id" ]; then
+	logger "Found disk $disk"
 	autopartition-multiboot "$id"
 	exit 0
     fi
