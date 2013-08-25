@@ -32,7 +32,7 @@ for vg_file in $VG_MAP_DIR/*; do
 
     logger "running perform_recipe_by_lvm $vg_name $recipe"
     # Assume the vg exists; probably not smart
-    perform_recipe_by_lvm "$vg_name" $recipe
+    perform_recipe_by_multiboot "$vg_name" $recipe
     logger "running vg_lock_pvs $vg_name $pv_devices"
     vg_lock_pvs "$vg_name" $pv_devices
 done

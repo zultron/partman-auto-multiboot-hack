@@ -9,6 +9,11 @@ As a result, some common configurations are not achievable by
 preseeding, such as a dual-boot system or reinstalling the OS but
 preserving data partitions.
 
+In addition, partman-auto-lvm creates the last LV in the VG to fill up
+all remaining space.  In some cases this makes no sense, such as a 2GB
+swap partition using 80GB.  In other cases, it takes away options,
+such as the ability to create snapshot volumes.
+
 This hack is not a general solution and does not address those
 scenarios.  This hack does one thing only.  It takes a preseeded
 partman-auto/method 'multiboot' expert_recipe.  It assumes that
@@ -16,7 +21,8 @@ primary partitions and LVM PVs and VGs are already set up, and
 preserves them.  The expert_recipe must define the VG to be reused,
 and any LVs to be installed.  If any of the specified LVs already
 exists, it removes them, and then creates new ones.  Any LVs not
-specified in the expert_recipe are ignored.
+specified in the expert_recipe are ignored.  Finally, the last LV is
+created with the specified size, not the remaining space in the VG.
 
 *** This is a hack. *** Do not use it unless the risk of destroying
 data is acceptable.
@@ -37,7 +43,10 @@ data is acceptable.
     below
 
   - instead of running auto_lvm_perform(), copies bottom portion where
-    LVs are created
+    LVs are created...
+
+  - ...and runs /bin/perform_recipe_by_multiboot instead of
+    /bin/perform_recipe_by_lvm
 
 /lib/partman/lib/auto-multiboot.sh:
 
@@ -89,3 +98,9 @@ data is acceptable.
     - small pieces copied from
       auto-shared.sh:create_primary_partitions()
 
+/bin/perform_recipe_by_multiboot:
+
+  - copy of perform_recipe_by_lvm
+
+  - when creating the LV, it creates it to the specified size instead
+    of filling the remaining space in the VG

@@ -18,10 +18,12 @@ if test -d /var/lib/anna-install; then
     fetch-url $URL/initial_auto_multiboot \
 	/lib/partman/display.d/05initial_auto_multiboot
     fetch-url $URL/auto-multiboot.sh /lib/partman/lib/auto-multiboot.sh
+    fetch-url $URL/perform_recipe_by_multiboot /bin/perform_recipe_by_multiboot
 
     # make them executable
     chmod +x \
 	/bin/autopartition-multiboot \
+	/bin/perform_recipe_by_multiboot \
 	/lib/partman/display.d/05initial_auto_multiboot
 else
     # in the dev environment
@@ -30,7 +32,8 @@ else
     # prepare a distribution
     rm -rf deploy
     mkdir -p deploy
-    cp autopartition-multiboot lib/auto-multiboot.sh \
+    cp autopartition-multiboot perform_recipe_by_multiboot \
+	lib/auto-multiboot.sh \
 	display.d/initial_auto_multiboot $0 \
 	deploy
 
