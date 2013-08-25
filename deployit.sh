@@ -37,4 +37,7 @@ else
     # deploy a tarball
     ssh $DESTHOST mkdir -p $DESTDIR
     tar czfC - deploy . | ssh $DESTHOST tar xzfC - $DESTDIR
+
+    # clean up
+    rm -rf deploy
 fi
