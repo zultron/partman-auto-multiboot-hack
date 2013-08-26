@@ -7,6 +7,8 @@ check_primary_partitions() {
     logger "in check_primary_partitions"
     logger "free_type $free_type"
 
+    local partid ondev num id size type fs path name
+
     # copy the first few lines of create_primary_partitions
 
     cd $dev
@@ -35,6 +37,37 @@ check_primary_partitions() {
 	    done
 	fi
 	logger "pv_devices $pv_devices"
+
+	# if method is multiboot and ondev{ } is set,
+	# try to match with an existing partition
+	if echo "$*" | grep -q "method{ multiboot }" && \
+	    echo "$*" | grep -q '\$ondev{'; then
+
+	    ondev="$(echo $* | sed -n 's/.*ondev{ \([^}]*\) }.*/\1/p')"
+
+	    logger "Found primary partition with method multiboot, ondev = $ondev"
+
+	    open_dialog PARTITIONS
+	    while { read_line num id size type fs path name; [ "$id" ]; }; do
+		[ "$fs" == free ] && continue
+		[ "$type" == primary ] || continue
+		if test "$path" = "$ondev"; then
+		    partid="$id"
+		fi
+	    done
+	    close_dialog
+
+	    if test -z "$partid"; then
+		logger "No existing partition found for $ondev"
+		return 1
+	    fi
+
+	    logger "found matching existing partition $id"
+
+	    logger "calling setup_partition $id $*"
+	    setup_partition $partid $*
+
+	fi
 
 	# copy last bit of create_primary_functions
 

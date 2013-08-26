@@ -21,8 +21,13 @@ primary partitions and LVM PVs and VGs are already set up, and
 preserves them.  The expert_recipe must define the VG to be reused,
 and any LVs to be installed.  If any of the specified LVs already
 exists, it removes them, and then creates new ones.  Any LVs not
-specified in the expert_recipe are ignored.  Finally, the last LV is
-created with the specified size, not the remaining space in the VG.
+specified in the expert_recipe are ignored.  The last LV is created
+with the specified size, not the remaining space in the VG.
+
+An existing primary partition (such as /boot) may be specified with
+'method{ multiboot }' and e.g. 'onpart{ /dev/sda1 }'.  This will cause
+it to be mounted in the specified 'mountpoint{ }' parameter without
+being formatted.
 
 *** This is a hack. *** Do not use it unless the risk of destroying
 data is acceptable.
@@ -97,6 +102,8 @@ data is acceptable.
 
     - small pieces copied from
       auto-shared.sh:create_primary_partitions()
+
+    - existing primary partitions may be mounted without formatting
 
 /bin/perform_recipe_by_multiboot:
 
