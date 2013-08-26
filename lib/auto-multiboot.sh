@@ -81,6 +81,8 @@ auto_multiboot_create_partitions() {
 
 
 # this is a copy of recipes.sh:update_all
+#
+# this isn't needed; just for logging/debugging
 update_all_multiboot () {
     local dev num id size type fs path name partitions
     logger "in update_all_multiboot"
