@@ -44,7 +44,7 @@ data is acceptable.
 
   - based on autopartition-lvm
 
-  - calls auto_multiboot_prepare() instead of auto_lvm_perform(); see
+  - calls auto_multiboot_prepare() instead of auto_lvm_prepare(); see
     below
 
   - instead of running auto_lvm_perform(), copies bottom portion where
